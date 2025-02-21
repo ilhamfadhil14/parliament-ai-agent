@@ -1,0 +1,65 @@
+{
+  "package": {},
+  "code": {
+    "answer_prompt.jinja2": {
+      "type": "prompt",
+      "inputs": {
+        "question": {
+          "type": [
+            "string"
+          ]
+        },
+        "context": {
+          "type": [
+            "string"
+          ]
+        },
+        "chat_history": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "answer_prompt.jinja2"
+    },
+    "get_information.py": {
+      "type": "python",
+      "inputs": {
+        "response_message": {
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "source": "get_information.py",
+      "function": "run_function"
+    },
+    "llm_qa.jinja2": {
+      "type": "llm",
+      "inputs": {
+        "chat_history": {
+          "type": [
+            "string"
+          ]
+        },
+        "question": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "llm_qa.jinja2"
+    },
+    "generate_answer.jinja2": {
+      "type": "llm",
+      "inputs": {
+        "generate_answer_prompt": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "source": "generate_answer.jinja2"
+    }
+  }
+}

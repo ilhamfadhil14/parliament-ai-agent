@@ -1,0 +1,115 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+environment_variables:
+  PF_DISABLE_TRACING: false
+inputs:
+  text:
+    type: string
+    default: What is the policy for Malaysia digital economy?
+  chat_history:
+    type: list
+    default: []
+outputs:
+  output:
+    type: string
+    reference: ${generate_answer.output}
+  main_agent_output:
+    type: string
+    reference: ${main_agent.output}
+  function_call_output:
+    type: string
+    reference: ${llm_function_call.output}
+nodes:
+- name: main_agent
+  type: llm
+  source:
+    type: code
+    path: llm_qa.jinja2
+  inputs:
+    model: gpt-4o
+    question: ${inputs.text}
+    chat_history: ${inputs.chat_history}
+    temperature: 0.1
+    response_format:
+      type: json_object
+    max_tokens: 8000
+    function_call: auto
+    functions: |-
+      [{
+              "name": "get_policy_database",
+              "description": "Get information from internal policy database",
+              "parameters": {
+                  "type": "object",
+                  "properties": {
+                      "prompt": {
+                          "type": "string",
+                          "description": "Question about the policy"
+                      }
+                  },
+                  "required": ["prompt"]
+              }
+          },
+          {
+              "name": "get_latest_news",
+              "description": "Get latest news from the internet",
+              "parameters": {
+                  "type": "object",
+                  "properties": {
+                      "query": {
+                          "type": "string",
+                          "description": "Question about news and latest information from the internet"
+                      }
+                  },
+                  "required": ["query"]
+              }
+          },
+          {
+              "name": "write_to_microsoft_word",
+              "description": "Generate a Microsoft Word document",
+              "parameters": {
+                  "type": "object",
+                  "properties": {
+                      "content": {
+                          "type": "string",
+                          "description": "Content to be written to the microsoft word document"
+                      }
+                  },
+                  "required": ["content"]
+              }
+          }
+      ]
+    deployment_name: gpt-4o-2
+  connection: openai_ilham
+  api: chat
+- name: llm_function_call
+  type: python
+  source:
+    type: code
+    path: get_information.py
+  inputs:
+    response_message: ${main_agent.output}
+- name: generate_answer
+  type: llm
+  source:
+    type: code
+    path: generate_answer.jinja2
+  inputs:
+    model: gpt-4o-mini-2024-07-18
+    temperature: 0.3
+    max_tokens: 8000
+    response_format:
+      type: json_object
+    generate_answer_prompt: ${answer_prompt.output}
+    deployment_name: gpt-4o-2
+  connection: openai_ilham
+  api: chat
+- name: answer_prompt
+  type: prompt
+  source:
+    type: code
+    path: answer_prompt.jinja2
+  inputs:
+    question: ${inputs.text}
+    context: ${llm_function_call.output}
+    chat_history: ${inputs.chat_history}

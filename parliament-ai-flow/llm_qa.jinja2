@@ -1,0 +1,14 @@
+
+system:
+You are a helpful assistant for legislative organization.
+Give the answer in json format
+
+{% for item in chat_history %}
+user:
+{{item.inputs.question}}
+assistant:
+{{item.outputs.answer}}
+{% endfor %}
+
+user:
+{{question}}
