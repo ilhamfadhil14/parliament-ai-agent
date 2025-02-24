@@ -50,6 +50,21 @@ def get_policy_database(
 
     return result
 
+def get_meeting_information(
+    query:str
+) -> Dict[Any, Any]:
+
+    embbeding = create_embeddings(query)
+    result = search_documents(search_service_name=SEARCH_SERVICE_NAME, 
+                              index_name="index-malaysia-hansard-helper", 
+                              top_k=8,
+                              api_key=SEARCH_API_KEY, 
+                              select_fields="title, content, metadata",
+                              vector_field="content_vector",
+                              vector=embbeding)
+
+    return result
+
 def search_documents(
     search_service_name: str,
     index_name: str,
@@ -57,7 +72,8 @@ def search_documents(
     vector: List,
     select_fields: str = "title, chunk",
     top_k: int = 5,
-    api_version: str = "2024-07-01"
+    api_version: str = "2024-07-01",
+    vector_field:str = "text_vector"
 ) -> Dict[Any, Any]:
     """
     Perform vector search against Azure Cognitive Search index
@@ -90,7 +106,7 @@ def search_documents(
                 "kind": "vector",
                 "vector": vector,
                 "exhaustive": True,
-                "fields": "text_vector",
+                "fields": vector_field,
                 "weight": 0.5,
                 "k": top_k
             }
@@ -103,7 +119,11 @@ def search_documents(
         response.raise_for_status()
         
         results = response.json()
-        filtered_results = [{'chunk': res['chunk'], 'title': res['title']} for res in results['value']]
+        try:
+            filtered_results = [{'chunk': res['chunk'], 'title': res['title']} for res in results['value']]
+        except: 
+            filtered_results = [{'chunk': res['content'], 'title': res['title'], 'metadata': res['metadata']} for res in results['value']]
+            
         return filtered_results
     except requests.exceptions.RequestException as e:
         raise Exception(f"Search request failed: {str(e)}")
