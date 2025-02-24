@@ -242,6 +242,26 @@ async def main(message: cl.Message):
         except:
             pass
 
+    if function_call_status == 'get_meeting_information':
+    
+        try:
+            citations = json.loads(response['output'])['citations']
+
+            for citation in citations:
+                if ".pdf" in citation.lower():
+
+                    file_path = [path for path in data_source_path_list if citation.lower() in path.lower()][0]
+
+                    pdf_element = cl.Pdf(
+                        name=citation,
+                        display="side",
+                        path=file_path,
+                        page=1
+                    )
+                    elements.append(pdf_element)
+        except:
+            pass
+
     if function_call_status == 'write_to_microsoft_word':
         
         try: 
