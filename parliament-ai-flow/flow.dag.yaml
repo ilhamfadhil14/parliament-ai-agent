@@ -6,7 +6,8 @@ environment_variables:
 inputs:
   text:
     type: string
-    default: What is the policy for Malaysia digital economy?
+    default: What were the main concerns regarding fraud and scams, and what have
+      been the Government efforts to address these from previous meeting?
   chat_history:
     type: list
     default: []
@@ -76,6 +77,20 @@ nodes:
                       }
                   },
                   "required": ["content"]
+              }
+          },
+          {
+              "name": "get_meeting_information",
+              "description": "Get information from internal discussion transcript",
+              "parameters": {
+                  "type": "object",
+                  "properties": {
+                      "query": {
+                          "type": "string",
+                          "description": "Question about internal discussion"
+                      }
+                  },
+                  "required": ["query"]
               }
           }
       ]
